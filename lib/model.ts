@@ -15,7 +15,9 @@
 //
 // where n is the category's live-token count and K is the shrinkage strength: a category with one or
 // two live tokens cannot set a wild multiple, because its median is pulled toward the global median.
-// A category with no live token takes the global median outright.
+// A category with no live token takes the global median outright. Every ratio is winsorized at
+// ratio_cap before any median is taken, so one token whose market cap dwarfs its own pool's TVL
+// cannot set a thin category's multiple on its own.
 //
 //   relative growth = change_7d - the category's median 7d change (the global median when the
 //                     category has too few reporters); null change_7d counts as the median.
@@ -58,6 +60,10 @@ export interface ModelConstants {
   /** The band a category multiple is clamped to. */
   multiple_min: number;
   multiple_max: number;
+  /** Ratios above this are winsorized before any median is taken: a token's market cap can dwarf its
+      own pool's TVL (a lending token priced on the whole protocol, not one pool), so an uncapped
+      ratio would let one mismatch set a thin category's multiple. */
+  ratio_cap: number;
   /** How much relative 7d growth moves the value (0.5: +100pp of relative growth adds 50%). */
   growth_weight: number;
   /** Relative growth is clamped to this band, in percentage points. */
@@ -80,6 +86,7 @@ export const MODEL: ModelConstants = {
   shrinkage_k: 6,
   multiple_min: 0.02,
   multiple_max: 1.2,
+  ratio_cap: 3,
   growth_weight: 0.5,
   rel_growth_floor: -50,
   rel_growth_cap: 100,
@@ -258,7 +265,7 @@ export function isRankable(p: SnapshotProtocol): boolean {
  */
 export function calibrate(snapshot: Snapshot, model: ModelConstants = MODEL): Calibration {
   const live = snapshot.protocols.filter((p) => p.mcap_usd !== null && p.mcap_usd > 0 && p.tvl_usd > 0);
-  const ratios = live.map((p) => p.mcap_usd! / p.tvl_usd);
+  const ratios = live.map((p) => Math.min(p.mcap_usd! / p.tvl_usd, model.ratio_cap));
   const globalMedian = ratios.length > 0 ? median(ratios) : 0.25;
   const changes = snapshot.protocols
     .filter((p) => p.change_7d !== null)
@@ -273,7 +280,7 @@ export function calibrate(snapshot: Snapshot, model: ModelConstants = MODEL): Ca
       bucket = { ratios: [], changes: [] };
       byCategory.set(p.category, bucket);
     }
-    if (p.mcap_usd !== null && p.mcap_usd > 0 && p.tvl_usd > 0) bucket.ratios.push(p.mcap_usd / p.tvl_usd);
+    if (p.mcap_usd !== null && p.mcap_usd > 0 && p.tvl_usd > 0) bucket.ratios.push(Math.min(p.mcap_usd / p.tvl_usd, model.ratio_cap));
     if (p.change_7d !== null) bucket.changes.push(p.change_7d);
   }
 

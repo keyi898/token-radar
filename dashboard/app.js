@@ -445,7 +445,7 @@
           tbody
         )
       ),
-      el('p', { class: 'note', text: 'Multiple applied = (n x median + ' + m.shrinkage_k + ' x global median ' + fmtMult(CAL.global_median) + ') / (n + ' + m.shrinkage_k + '), clamped to [' + m.multiple_min + ', ' + m.multiple_max + ']. A category with no live token takes the global median.' }),
+      el('p', { class: 'note', text: 'Multiple applied = (n x median + ' + m.shrinkage_k + ' x global median ' + fmtMult(CAL.global_median) + ') / (n + ' + m.shrinkage_k + '), clamped to [' + m.multiple_min + ', ' + m.multiple_max + ']. A category with no live token takes the global median. Medians are taken over ratios winsorized at ' + m.ratio_cap + 'x: a token\u2019s market cap can dwarf its own pool\u2019s TVL, so an uncapped ratio would let one mismatch set a thin category\u2019s multiple.' }),
       el('h3', { text: 'Sandbox: change the constants, re-rank the board' }),
       sandbox,
       el('p', { class: 'sandbox-note', html: sb.active ? 'Sandbox active: <b>' + moved + ' of ' + DATA.board_size + ' rows</b> re-scored. Open the Pre-token tab to see the re-ranked board.' : 'Move a slider to re-score every row live. The published board in board.json is untouched.' }),

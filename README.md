@@ -10,7 +10,7 @@ A token launch radar: every pre-token protocol in DefiLlama's index, ranked by a
 
 The starter's flat multiple (TVL x 0.25 for every protocol) ignores what the market already tells us: live-token protocols trade at very different multiples of TVL by category. This entry calibrates from the snapshot itself:
 
-- **Category multiple**: for each category, the median market-cap/TVL ratio of its live-token protocols, shrunk toward the global median (prior strength 6) so a category with one or two live tokens cannot set a wild multiple. Categories with no live token use the global median.
+- **Category multiple**: for each category, the median market-cap/TVL ratio of its live-token protocols, shrunk toward the global median (prior strength 6) so a category with one or two live tokens cannot set a wild multiple. Ratios are winsorized at 3x before any median is taken, since a token's market cap can dwarf its own pool's TVL. Categories with no live token use the global median.
 - **Relative growth**: seven-day TVL change measured against the category's median week, clamped, so a protocol that held flat while its category fell scores as growing.
 - **Maturity**: a saturating age curve — longer running with no token, up to two years, counts for more.
 - **Chain breadth**: a small log-scaled factor for protocols live on more chains.
