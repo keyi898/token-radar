@@ -175,6 +175,7 @@ export interface RadarRow {
   listed_at: string | null;
   age_days: number | null;
   implied_value_usd: number;
+  on_watchlist: boolean;
   category_multiple: number;
   category_live_n: number;
   growth_multiplier: number;
@@ -554,7 +555,7 @@ export function liveRows(snapshot: Snapshot): LiveRow[] {
 }
 
 /** A board row's compact form for data.js, with the farm plan generated in the page. */
-export function radarRow(row: BoardRow): RadarRow {
+export function radarRow(row: BoardRow, onWatchlist: boolean): RadarRow {
   return {
     rank: row.rank,
     slug: row.slug,
@@ -567,6 +568,7 @@ export function radarRow(row: BoardRow): RadarRow {
     listed_at: row.listed_at,
     age_days: row.age_days,
     implied_value_usd: row.implied_value_usd,
+    on_watchlist: onWatchlist,
     category_multiple: row.model.category_multiple,
     category_live_n: row.model.category_live_n,
     growth_multiplier: row.model.growth_multiplier,
@@ -593,7 +595,7 @@ export function buildRadar(snapshot: Snapshot, model: ModelConstants = MODEL): {
     early_size: early,
     live_size: live.length,
     calibration,
-    rows: board.map(radarRow),
+    rows: board.map((r) => radarRow(r, watch.has(r.slug))),
     live,
   };
   return { board, radar };
